@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<!-- v3.1 - 创伤测评模块（修复版） -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>应急中心 · 心理测评系统</title>
+<style>
+:root {
+  --primary: #1a3c5e;
+  --primary-light: #2a5a8e;
+  --accent: #c0392b;
+  --bg: #f5f7fa;
+  --card: #ffffff;
+  --border: #dce3e8;
+  --text: #2c3e50;
+  --text-light: #7f8c8d;
+  --success: #27ae60;
+  --warning: #f39c12;
+  --danger: #e74c3c;
+  --dim-blue: #e8f0fe;
+  --dim-red: #fdecea;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, var(--primary) 0%, #0d2137 100%);
+  color: white;
+  padding: 16px 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-left { text-align: left; }
+.header h1 { font-size: 20px; font-weight: 700; letter-spacing: 2px; }
+.header .subtitle { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.user-info {
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.user-info .avatar {
+  width: 30px;
+  height: 30px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+.header-btn {
+  padding: 5px 14px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.1);
+  color: white;
+  border-radius: 5px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-block;
+}
+.header-btn:hover {
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.5);
+}
+.header-btn.danger:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Info Bar */
+.info-bar {
+  background: white;
+  padding: 12px 32px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.info-bar label { font-size: 13px; color: var(--text-light); font-weight: 500; white-space: nowrap; }
+.info-bar input {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 14px;
+  width: 160px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.info-bar input:focus { border-color: var(--primary); }
+.info-bar .required-mark { color: var(--danger); margin-left: 2px; }
+
+/* Mode Selector */
+.mode-selector {
+  background: white;
+  padding: 8px 32px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mode-selector .mode-label { font-size: 13px; color: var(--text-light); font-weight: 500; }
+.mode-btn {
+  padding: 6px 20px;
+  border: 2px solid var(--border);
+  background: white;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-light);
+  transition: all 0.2s;
+}
+.mode-btn:hover { border-color: var(--primary-light); color: var(--primary); background: var(--dim-blue); }
+.mode-btn.active { background: var(--primary-light); color: white; border-color: var(--primary-light); }
+
+/* Progress bar */
+.progress-wrap {
+  background: white;
+  padding: 16px 32px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 200px;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--primary-light);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+.progress-text { font-size: 13px; color: var(--text-light); white-space: nowrap; }
+
+/* Container */
+.container { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+
+/* Tab nav */
+.tab-nav {
+  display: flex;
+  background: var(--card);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.tab-btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 14px 8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-light);
+  transition: all 0.2s;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--primary); background: var(--dim-blue); }
+.tab-btn.active { color: var(--primary); border-bottom-color: var(--primary-light); background: var(--dim-blue); }
+.tab-btn.done { color: var(--success); }
+.tab-btn .tab-badge {
+  display: inline-block;
+  width: 20px; height: 20px;
+  line-height: 20px;
+  border-radius: 50%;
+  background: var(--border);
+  color: var(--text-light);
+  font-size: 11px;
+  margin-right: 4px;
+}
+.tab-btn.done .tab-badge { background: var(--success); color: white; }
+.tab-btn.active .tab-badge { background: var(--primary-light); color: white; }
+
+/* Card */
+.card {
+  background: var(--card);
+  border-radius: 10px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+  padding: 28px 32px;
+  margin-bottom: 20px;
+}
+.card h2 {
+  font-size: 18px;
+  color: var(--primary);
+  margin-bottom: 8px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border);
+}
+.card .guide {
+  font-size: 13px;
+  color: var(--text-light);
+  margin-bottom: 20px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border-left: 3px solid var(--primary-light);
+  border-radius: 0 6px 6px 0;
+}
+
+/* Scale items */
+.scale-item {
+  padding: 14px 0;
+  border-bottom: 1px solid #f0f2f5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-start;
+}
+.scale-item:last-child { border-bottom: none; }
+.scale-item .item-num {
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  text-align: center;
+  background: var(--primary-light);
+  color: white;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.scale-item .item-num.rev { background: var(--accent); }
+.scale-item .item-text {
+  flex: 1;
+  min-width: 240px;
+  font-size: 14px;
+  padding-top: 5px;
+}
+.scale-item .item-dim {
+  font-size: 11px;
+  color: var(--primary-light);
+  background: var(--dim-blue);
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+  height: 22px;
+  line-height: 18px;
+  margin-top: 5px;
+}
+.scale-item .item-dim.rev-dim {
+  color: var(--accent);
+  background: var(--dim-red);
+}
+
+/* Radio options */
+.radio-group {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.radio-opt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 44px;
+}
+.radio-opt input[type="radio"] { display: none; }
+.radio-opt label {
+  display: block;
+  width: 34px;
+  height: 34px;
+  line-height: 34px;
+  text-align: center;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-light);
+  transition: all 0.15s;
+  background: white;
+}
+.radio-opt input:checked + label {
+  background: var(--primary-light);
+  color: white;
+  border-color: var(--primary-light);
+}
+.radio-opt:hover label {
+  border-color: var(--primary-light);
+  background: var(--dim-blue);
+}
+.radio-opt .opt-label {
+  font-size: 10px;
+  color: var(--text-light);
+  margin-top: 2px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Buttons */
+.btn-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+.btn {
+  padding: 10px 28px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-primary { background: var(--primary-light); color: white; }
+.btn-primary:hover { background: var(--primary); }
+.btn-outline { background: white; color: var(--primary-light); border: 2px solid var(--primary-light); }
+.btn-outline:hover { background: var(--dim-blue); }
+.btn-success { background: var(--success); color: white; }
+.btn-success:hover { background: #219a52; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Result page */
+.result-section {
+  margin-bottom: 24px;
+}
+.result-section h3 {
+  font-size: 16px;
+  color: var(--primary);
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  background: var(--dim-blue);
+  border-radius: 6px;
+}
+.result-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+.result-table th {
+  background: var(--primary);
+  color: white;
+  padding: 10px 12px;
+  text-align: center;
+  font-weight: 600;
+}
+.result-table td {
+  padding: 8px 12px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+.result-table tr:nth-child(even) td { background: #f8fafc; }
+.result-table .dim-name { text-align: left; font-weight: 600; color: var(--primary); }
+.result-high { color: var(--danger); font-weight: 700; }
+.result-mid { color: var(--warning); font-weight: 700; }
+.result-low { color: var(--success); font-weight: 700; }
+
+.result-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.result-bar {
+  flex: 1;
+  height: 16px;
+  background: #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.result-bar-fill {
+  height: 100%;
+  border-radius: 8px;
+  transition: width 0.6s ease;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 24px;
+  margin-bottom: 16px;
+}
+.info-item { display: flex; gap: 8px; font-size: 14px; }
+.info-item .info-label { color: var(--text-light); }
+.info-item .info-value { font-weight: 600; }
+
+/* Result badge - 修复：新增缺失样式 */
+.result-badge {
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.6;
+  margin-top: 10px;
+}
+.result-badge.result-high {
+  background: var(--dim-red);
+  color: #b71c1c;
+  border-left: 4px solid var(--danger);
+}
+.result-badge.result-mid {
+  background: #fff8e1;
+  color: #e65100;
+  border-left: 4px solid var(--warning);
+}
+.result-badge.result-low {
+  background: #e8f5e9;
+  color: #1b5e20;
+  border-left: 4px solid var(--success);
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: white;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.toast.show { opacity: 1; }
+
+/* Print */
+@media print {
+  .header, .tab-nav, .btn-row, .progress-wrap, .mode-selector, .info-bar { display: none; }
+  .card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+  body { background: white; }
+  .result-badge { border: 1px solid #ccc; }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .card { padding: 16px; }
+  .radio-opt { min-width: 36px; }
+  .radio-opt label { width: 28px; height: 28px; line-height: 28px; font-size: 11px; }
+  .scale-item { flex-direction: column; gap: 4px; }
+  .info-grid { grid-template-columns: 1fr; }
+  .info-bar, .mode-selector, .progress-wrap { padding: 12px 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-left">
+      <h1>应急中心</h1>
+      <div class="subtitle" id="headerSubtitle">新入职人员心理测评</div>
+    </div>
+    <div class="header-right">
+      <div class="user-info">
+        <div class="avatar">{{ username[0]|upper if username else 'U' }}</div>
+        <span>{{ username }}</span>
+      </div>
+      {% if session.is_admin %}
+      <a href="{{ url_for('admin') }}" class="header-btn">后台管理</a>
+      {% endif %}
+      <a href="{{ url_for('logout') }}" class="header-btn danger">退出登录</a>
+    </div>
+  </div>
+</div>
+
+<div class="info-bar">
+  <label>姓名<span class="required-mark">*</span></label>
+  <input type="text" id="infoName" placeholder="请输入姓名" oninput="savePersonInfo()">
+  <label>岗位<span class="required-mark">*</span></label>
+  <input type="text" id="infoJob" placeholder="请输入岗位" oninput="savePersonInfo()">
+</div>
+
+<div class="mode-selector">
+  <span class="mode-label">测评类型：</span>
+  <button class="mode-btn active" data-mode="new" onclick="switchMode('new')">新入职人员测评</button>
+  <button class="mode-btn" data-mode="active" onclick="switchMode('active')">在岗人员筛查</button>
+  <button class="mode-btn" data-mode="trauma" onclick="switchMode('trauma')">重大险情后创伤测评</button>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-text" id="progressText">0 / 104 题已完成</div>
+</div>
+
+<div class="container">
+
+<!-- Tab Navigation -->
+<div class="tab-nav" id="tabNav"></div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Scale panels are dynamically generated by JS -->
+
+<!-- ==================== RESULT PANEL ==================== -->
+<div class="card tab-panel" id="panelResult" style="display:none">
+  <h2>测评结果汇总</h2>
+  <div class="guide" id="resultGuide">以下为自动统计生成的测评结果，可打印存档。请核对各项得分。</div>
+  <div id="resultContent"></div>
+  <div class="btn-row">
+    <button class="btn btn-outline" onclick="switchTab(scales.length-1)">← 返回修改</button>
+    <button class="btn btn-primary" onclick="window.print()">打印结果</button>
+    <button class="btn btn-success" onclick="saveResult()">保存结果</button>
+    <button class="btn btn-primary" onclick="exportResult()">导出结果</button>
+  </div>
+  <div id="savedResults" style="margin-top:24px"></div>
+</div>
+
+</div>
+
+<script>
+// ==================== ERROR REPORTER ====================
+window.onerror = function(msg, url, line, col, err) {
+  var box = document.getElementById('errorBox');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'errorBox';
+    box.style.cssText = 'position:fixed;bottom:12px;right:12px;max-width:420px;padding:12px 16px;background:#fff3f3;border:2px solid #c62828;border-radius:8px;font-size:12px;color:#333;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.2)';
+    document.body.appendChild(box);
+  }
+  box.innerHTML = '<b style="color:#c62828">JS Error (line ' + line + '):</b> ' + msg + '<br><small>Reload page after fix (Ctrl+F5)</small>';
+};
+
+// ==================== DATA: 新入职人员 ====================
+const scalesNew = [
+  { // 0: CBF-PI-B
+    name: 'CBF-PI-B大五人格',
+    fullName: '中国大五人格问卷简式版（CBF-PI-B）',
+    tabName: '大五人格',
+    guide: '请根据每个句子与您性格的相符程度选择：<b>1</b>=完全不符合 <b>2</b>=大部分不符合 <b>3</b>=有点不符合 <b>4</b>=有点符合 <b>5</b>=大部分符合 <b>6</b>=完全符合。共40题。',
+    items: [
+      {n:1, t:'我常担心有什么不好的事情要发生', d:'神经质(N)', r:false},
+      {n:2, t:'一旦确定了目标，我会坚持努力地实现它', d:'严谨性(C)', r:false},
+      {n:3, t:'我觉得大部分人基本上是心怀善意的', d:'宜人性(A)', r:false},
+      {n:4, t:'我头脑中经常充满生动的画面', d:'开放性(O)', r:false},
+      {n:5, t:'我对人多的聚会感到乏味', d:'外向性(E)', r:true},
+      {n:6, t:'有时我觉得自己一无是处', d:'神经质(N)', r:false},
+      {n:7, t:'我常常是仔细考虑之后才做出决定', d:'严谨性(C)', r:false},
+      {n:8, t:'我不太关心别人是否受到不公正的待遇', d:'宜人性(A)', r:true},
+      {n:9, t:'我是个勇于冒险，突破常规的人', d:'开放性(O)', r:false},
+      {n:10, t:'在热闹的聚会上，我常常表现主动并尽情玩耍', d:'外向性(E)', r:false},
+      {n:11, t:'别人一句漫不经心的话，我常会联系在自己身上', d:'神经质(N)', r:false},
+      {n:12, t:'别人认为我是个慎重的人', d:'严谨性(C)', r:false},
+      {n:13, t:'我时常觉得别人的痛苦与我无关', d:'宜人性(A)', r:true},
+      {n:14, t:'我喜欢冒险', d:'开放性(O)', r:false},
+      {n:15, t:'我尽量避免参加人多的聚会和嘈杂的环境', d:'外向性(E)', r:true},
+      {n:16, t:'在面对压力时，我有种快要崩溃的感觉', d:'神经质(N)', r:false},
+      {n:17, t:'我喜欢一开头就把事情计划好', d:'严谨性(C)', r:false},
+      {n:18, t:'我是那种只照顾好自己，不替别人担忧的人', d:'宜人性(A)', r:true},
+      {n:19, t:'我对许多事情有着很强的好奇心', d:'开放性(O)', r:false},
+      {n:20, t:'有我在的场合一般不会冷场', d:'外向性(E)', r:false},
+      {n:21, t:'我常担忧一些无关紧要的事情', d:'神经质(N)', r:false},
+      {n:22, t:'我工作或学习很勤奋', d:'严谨性(C)', r:false},
+      {n:23, t:'虽然社会上有些骗子，但我觉得大部分人还是可信的', d:'宜人性(A)', r:false},
+      {n:24, t:'我身上具有别人没有的冒险精神', d:'开放性(O)', r:false},
+      {n:25, t:'在一个团体中，我希望处于领导地位', d:'外向性(E)', r:false},
+      {n:26, t:'我常常感到内心不踏实', d:'神经质(N)', r:false},
+      {n:27, t:'我是个倾尽全力做事的人', d:'严谨性(C)', r:false},
+      {n:28, t:'当别人向我诉说不幸时，我常感到难过', d:'宜人性(A)', r:false},
+      {n:29, t:'我渴望学习一些新东西，即使它们与我的日常生活无关', d:'开放性(O)', r:false},
+      {n:30, t:'别人多认为我是一个热情和友好的人', d:'外向性(E)', r:false},
+      {n:31, t:'我常感到害怕', d:'神经质(N)', r:false},
+      {n:32, t:'在工作上，我常只求能应付过去便可', d:'严谨性(C)', r:true},
+      {n:33, t:'尽管人类社会存在着一些阴暗的东西，我仍然相信人性总的来说是善良的', d:'宜人性(A)', r:false},
+      {n:34, t:'我的想象力相当丰富', d:'开放性(O)', r:false},
+      {n:35, t:'我喜欢参加社交与娱乐聚会', d:'外向性(E)', r:false},
+      {n:36, t:'我很少感到忧郁或沮丧', d:'神经质(N)', r:true},
+      {n:37, t:'做事讲究逻辑和条理是我的一个特点', d:'严谨性(C)', r:false},
+      {n:38, t:'我常为那些遭遇不幸的人感到难过', d:'宜人性(A)', r:false},
+      {n:39, t:'我很愿意也很容易接受那些新事物、新观点、新想法', d:'开放性(O)', r:false},
+      {n:40, t:'我希望成为领导者而不是被领导者', d:'外向性(E)', r:false},
+    ],
+    options: [
+      {v:1, l:'完全不符合'}, {v:2, l:'大部分不符合'}, {v:3, l:'有点不符合'},
+      {v:4, l:'有点符合'}, {v:5, l:'大部分符合'}, {v:6, l:'完全符合'}
+    ],
+    dims: {
+      '神经质(N)': [1,6,11,16,21,26,31,36],
+      '严谨性(C)': [2,7,12,17,22,27,32,37],
+      '宜人性(A)': [3,8,13,18,23,28,33,38],
+      '开放性(O)': [4,9,14,19,24,29,34,39],
+      '外向性(E)': [5,10,15,20,25,30,35,40],
+    },
+    dimDescs: {
+      '神经质(N)': '高分表示情绪不稳定、易焦虑',
+      '严谨性(C)': '高分表示自律、有条理、尽责',
+      '宜人性(A)': '高分表示富有同情心、信任他人',
+      '开放性(O)': '高分表示好奇、富有想象力',
+      '外向性(E)': '高分表示外向、善于社交',
+    },
+    reverseItems: [5,8,13,15,18,32,36],
+    maxPerDim: 48
+  },
+  { // 1: PSS-14
+    name: 'PSS感知压力',
+    fullName: '感知压力量表（PSS-14）',
+    tabName: '感知压力',
+    guide: '请根据您<b>过去一个月</b>的真实感受选择频率：<b>0</b>=从不 <b>1</b>=很少 <b>2</b>=有时 <b>3</b>=经常 <b>4</b>=总是。共14题。',
+    items: [
+      {n:1, t:'经常有一些无法预期的事情发生，使你感到心烦意乱', d:'紧张感', r:false},
+      {n:2, t:'感觉无法控制自己生活中重要的事情', d:'紧张感', r:false},
+      {n:3, t:'感到紧张不安和压力', d:'紧张感', r:false},
+      {n:4, t:'能成功地处理恼人的生活麻烦', d:'失控感', r:true},
+      {n:5, t:'感到自己能有效地处理生活中所发生的重要改变', d:'失控感', r:true},
+      {n:6, t:'对于有能力处理自己私人的问题感到很有信心', d:'失控感', r:true},
+      {n:7, t:'感到事情都在按照自己意愿在发展', d:'失控感', r:true},
+      {n:8, t:'发现自己无法处理所有自己必须要做的事情，怀疑能力无法胜任', d:'紧张感', r:false},
+      {n:9, t:'能解决生活中令人不快的事情', d:'失控感', r:true},
+      {n:10, t:'常觉得自己是驾驭事情的主人', d:'失控感', r:true},
+      {n:11, t:'常生气，因为很多事情的发生是超出自己所能控制的', d:'紧张感', r:false},
+      {n:12, t:'发觉自己经常会惦记一些必须要完成的事情，很难放松', d:'紧张感', r:false},
+      {n:13, t:'常能掌握时间的安排方式', d:'失控感', r:true},
+      {n:14, t:'常感到困难的事情堆积如山，而自己无法克服它们', d:'紧张感', r:false},
+    ],
+    options: [
+      {v:0, l:'从不'}, {v:1, l:'很少'}, {v:2, l:'有时'}, {v:3, l:'经常'}, {v:4, l:'总是'}
+    ],
+    dims: {
+      '紧张感': [1,2,3,8,11,12,14],
+      '失控感': [4,5,6,7,9,10,13],
+    },
+    dimDescs: {
+      '紧张感': '反映对生活不可预测和不可控的紧张感受',
+      '失控感': '反映感知到的自我效能和控制感（反向计分）',
+    },
+    reverseItems: [4,5,6,7,9,10,13],
+    maxPerDim: 28,
+    totalMax: 56,
+    norms: [
+      {range:[0,18], level:'较低压力', cls:'result-low', desc:'近期感知压力相对较低'},
+      {range:[19,36], level:'中等压力', cls:'result-mid', desc:'近期可能有一定压力，建议关注压力来源'},
+      {range:[37,56], level:'较高/极高压力', cls:'result-high', desc:'近期感知压力较高，建议寻求支持与调节'},
+    ]
+  },
+  { // 2: SCSQ
+    name: 'SCSQ应对方式',
+    fullName: '简易应对方式量表（SCSQ）',
+    tabName: '应对方式',
+    guide: '当您在生活中遇到挫折打击或困难时，可能采取以下态度和做法，请选择：<b>0</b>=不采取 <b>1</b>=偶尔采取 <b>2</b>=有时采取 <b>3</b>=经常采取。共20题。',
+    items: [
+      {n:1, t:'通过工作学习或一些其他活动解脱', d:'积极应对', r:false},
+      {n:2, t:'与人交谈，倾诉内心烦恼', d:'积极应对', r:false},
+      {n:3, t:'尽量看到事物好的一面', d:'积极应对', r:false},
+      {n:4, t:'改变自己的想法，重新发现生活中什么重要', d:'积极应对', r:false},
+      {n:5, t:'不把问题看得太严重', d:'积极应对', r:false},
+      {n:6, t:'坚持自己的立场，为自己想得到的斗争', d:'积极应对', r:false},
+      {n:7, t:'找出几种不同的解决问题的方法', d:'积极应对', r:false},
+      {n:8, t:'向亲戚朋友或同学寻求建议', d:'积极应对', r:false},
+      {n:9, t:'改变原来的一些做法或自己的一些问题', d:'积极应对', r:false},
+      {n:10, t:'借鉴他人处理类似困难情景的办法', d:'积极应对', r:false},
+      {n:11, t:'寻求业余爱好，积极参加文体活动', d:'积极应对', r:false},
+      {n:12, t:'尽量克制自己的失望、悔恨、悲伤和愤怒感情', d:'积极应对', r:false},
+      {n:13, t:'试图休息或休假，暂时把问题（烦恼）抛开', d:'消极应对', r:false},
+      {n:14, t:'通过吸烟、喝酒、服药和吃东西来解除烦恼', d:'消极应对', r:false},
+      {n:15, t:'认为时间会改变现状，唯一要做的便是等待', d:'消极应对', r:false},
+      {n:16, t:'试图忘记整个事情', d:'消极应对', r:false},
+      {n:17, t:'依靠别人解决问题', d:'消极应对', r:false},
+      {n:18, t:'接受现实，因为没有其它办法', d:'消极应对', r:false},
+      {n:19, t:'幻想可能会发生某种奇迹改变现状', d:'消极应对', r:false},
+      {n:20, t:'自己安慰自己', d:'消极应对', r:false},
+    ],
+    options: [
+      {v:0, l:'不采取'}, {v:1, l:'偶尔采取'}, {v:2, l:'有时采取'}, {v:3, l:'经常采取'}
+    ],
+    dims: {
+      '积极应对': [1,2,3,4,5,6,7,8,9,10,11,12],
+      '消极应对': [13,14,15,16,17,18,19,20],
+    },
+    dimDescs: {
+      '积极应对': '分数越高表示越倾向积极应对策略',
+      '消极应对': '分数越高表示越倾向消极应对策略',
+    },
+    reverseItems: [],
+    maxPerDim: { '积极应对': 36, '消极应对': 24 },
+    scsqMode: true
+  },
+  { // 3: 井控胜任力
+    name: '井控胜任力',
+    fullName: '井控胜任力量表',
+    tabName: '井控胜任力',
+    guide: '请根据您在井控应急抢险工作中的真实心理状态进行自评：<b>1</b>=完全不符合 <b>2</b>=大部分不符合 <b>3</b>=有点不符合 <b>4</b>=有点符合 <b>5</b>=大部分符合 <b>6</b>=完全符合。共30题。',
+    items: [
+      {n:1, t:'面对高强度工作压力时，我能够保持正常的工作状态', d:'压力耐受性', r:false},
+      {n:2, t:'在连续抢险作业的情况下，我能够持续保持专注力', d:'压力耐受性', r:false},
+      {n:3, t:'遭遇突发险情升级时，我不会因压力而手足无措', d:'压力耐受性', r:false},
+      {n:4, t:'长时间处于高风险环境中，我能维持稳定的判断力', d:'压力耐受性', r:false},
+      {n:5, t:'多项任务同时压来时，我能有条不紊地安排优先级', d:'压力耐受性', r:false},
+      {n:6, t:'面对井喷等严重险情时，我能够保持情绪平稳', d:'情绪稳定性', r:false},
+      {n:7, t:'即使在恶劣天气和危险环境下，我也很少感到恐慌', d:'情绪稳定性', r:false},
+      {n:8, t:'遇到应急抢险中的挫折时，我能迅速调整心态', d:'情绪稳定性', r:false},
+      {n:9, t:'听到现场警报或异常声响时，我不会慌乱', d:'情绪稳定性', r:false},
+      {n:10, t:'在不确定的救援结果面前，我能克制焦虑情绪', d:'情绪稳定性', r:false},
+      {n:11, t:'在信息不完整的情况下，我敢于做出应急判断', d:'危机决策心理', r:false},
+      {n:12, t:'面对多种处置方案时，我能够果断选择最佳方案', d:'危机决策心理', r:false},
+      {n:13, t:'应急处置中计划被打乱时，我能迅速找到替代方案', d:'危机决策心理', r:false},
+      {n:14, t:'生命和财产受到威胁时，我能保持清醒的决策头脑', d:'危机决策心理', r:false},
+      {n:15, t:'在紧迫的时间压力下，我仍能做出合理的安全判断', d:'危机决策心理', r:false},
+      {n:16, t:'经历过抢险失败后，我能够迅速恢复并总结经验', d:'心理韧性', r:false},
+      {n:17, t:'在反复高强度出勤后，我依然保持积极的工作心态', d:'心理韧性', r:false},
+      {n:18, t:'面对可能出现的生命危险，我不会因此退缩', d:'心理韧性', r:false},
+      {n:19, t:'应急演练中暴露不足时，我会将其视为提升机会', d:'心理韧性', r:false},
+      {n:20, t:'连续处理多起险情后，我的心理状态能快速复原', d:'心理韧性', r:false},
+      {n:21, t:'我能够客观评估井控应急作业中的安全风险', d:'风险应对心理', r:false},
+      {n:22, t:'面对可控风险，我不会过度畏缩或回避', d:'风险应对心理', r:false},
+      {n:23, t:'对未知的井下状况，我有足够的心理准备去应对', d:'风险应对心理', r:false},
+      {n:24, t:'我理解井控抢险工作的危险性并做好相应的心理准备', d:'风险应对心理', r:false},
+      {n:25, t:'在高风险环境下，我能够平衡安全与效率的关系', d:'风险应对心理', r:false},
+      {n:26, t:'在紧急抢险中，我能够信任并配合队友的处置行动', d:'团队协作心理', r:false},
+      {n:27, t:'抢险指令下达后，我能无条件执行团队的统一指挥', d:'团队协作心理', r:false},
+      {n:28, t:'发现队友操作失误时，我能以建设性方式及时提醒', d:'团队协作心理', r:false},
+      {n:29, t:'团队承受巨大压力时，我能够主动分担并鼓舞士气', d:'团队协作心理', r:false},
+      {n:30, t:'在跨部门联合抢险中，我能有效沟通协调各方的行动', d:'团队协作心理', r:false},
+    ],
+    options: [
+      {v:1, l:'完全不符合'}, {v:2, l:'大部分不符合'}, {v:3, l:'有点不符合'},
+      {v:4, l:'有点符合'}, {v:5, l:'大部分符合'}, {v:6, l:'完全符合'}
+    ],
+    dims: {
+      '压力耐受性': [1,2,3,4,5],
+      '情绪稳定性': [6,7,8,9,10],
+      '危机决策心理': [11,12,13,14,15],
+      '心理韧性': [16,17,18,19,20],
+      '风险应对心理': [21,22,23,24,25],
+      '团队协作心理': [26,27,28,29,30],
+    },
+    dimDescs: {
+      '压力耐受性': '高强度作业下的承压与持续专注能力',
+      '情绪稳定性': '险情环境中的情绪控制与恐慌管理',
+      '危机决策心理': '信息不足情境下的果断判断与方案选择',
+      '心理韧性': '失败/挫折后的心态恢复与抗打击能力',
+      '风险应对心理': '对危险环境的心理预期与风险平衡能力',
+      '团队协作心理': '紧急状态下团队信任配合与协同执行能力',
+    },
+    reverseItems: [],
+    maxPerDim: 30,
+    totalMax: 180
+  }
+];
+
+// ==================== DATA: 在岗人员筛查 ====================
+const scalesInService = [
+  { // 0: 职业心理倦怠量表
+    name: '职业心理倦怠量表',
+    fullName: '职业心理倦怠量表（MBI-GS 改编版）',
+    tabName: '职业倦怠',
+    guide: '请根据您在井控应急救援工作中的真实感受，选择以下情况出现的频率：<b>0</b>=从不 <b>1</b>=极少(一年几次) <b>2</b>=偶尔(每月一次) <b>3</b>=有时(每月几次) <b>4</b>=经常(每周一次) <b>5</b>=频繁(每周几次) <b>6</b>=每天。共15题。',
+    items: [
+      {n:1, t:'工作让我感到身心俱疲', d:'情绪衰竭', r:false},
+      {n:2, t:'下班时我感到精疲力尽', d:'情绪衰竭', r:false},
+      {n:3, t:'早晨起床想到要面对一天的工作，我就感到疲惫', d:'情绪衰竭', r:false},
+      {n:4, t:'整天工作对我来说确实压力很大', d:'情绪衰竭', r:false},
+      {n:5, t:'工作让我有快要崩溃的感觉', d:'情绪衰竭', r:false},
+      {n:6, t:'自从开始这份工作，我对工作越来越不感兴趣', d:'去人格化', r:false},
+      {n:7, t:'我对工作的热情已经减退了', d:'去人格化', r:false},
+      {n:8, t:'我怀疑自己所做工作的意义', d:'去人格化', r:false},
+      {n:9, t:'我对自己工作的贡献越来越不关心', d:'去人格化', r:false},
+      {n:10, t:'我能有效地解决工作中出现的问题', d:'成就感降低', r:true},
+      {n:11, t:'我觉得我在为单位做有用的贡献', d:'成就感降低', r:true},
+      {n:12, t:'在我看来，我擅长于自己的工作', d:'成就感降低', r:true},
+      {n:13, t:'完成工作上的一些事情时，我感到非常高兴', d:'成就感降低', r:true},
+      {n:14, t:'我完成了很多有价值的工作', d:'成就感降低', r:true},
+      {n:15, t:'我自信自己能有效地完成各项工作', d:'成就感降低', r:true},
+    ],
+    options: [
+      {v:0, l:'从不'}, {v:1, l:'极少'}, {v:2, l:'偶尔'}, {v:3, l:'有时'},
+      {v:4, l:'经常'}, {v:5, l:'频繁'}, {v:6, l:'每天'}
+    ],
+    dims: {
+      '情绪衰竭': [1,2,3,4,5],
+      '去人格化': [6,7,8,9],
+      '成就感降低': [10,11,12,13,14,15],
+    },
+    dimDescs: {
+      '情绪衰竭': '高分表示情绪资源消耗严重，感到工作疲劳',
+      '去人格化': '高分表示对工作产生疏离和冷漠态度',
+      '成就感降低': '分数越低表示个人成就感越差（反向计分）',
+    },
+    reverseItems: [10,11,12,13,14,15],
+    maxPerDim: { '情绪衰竭': 30, '去人格化': 24, '成就感降低': 36 },
+    totalMax: 90,
+    burnoutLevels: [
+      {range:[0,30], level:'无明显倦怠', cls:'result-low', desc:'当前未出现明显的职业倦怠表现，工作状态良好。'},
+      {range:[31,50], level:'轻度倦怠', cls:'result-mid', desc:'存在一定程度的职业倦怠倾向，建议关注工作压力管理。'},
+      {range:[51,70], level:'中度倦怠', cls:'result-high', desc:'职业倦怠较为明显，建议进行心理干预和适当调休。'},
+      {range:[71,90], level:'重度倦怠', cls:'result-high', desc:'职业倦怠程度严重，强烈建议安排心理疏导并评估是否暂离高危岗位。'},
+    ]
+  },
+  { // 1: 心理应激筛查量表
+    name: '心理应激筛查量表',
+    fullName: '心理应激筛查量表（IES-R 改编版）',
+    tabName: '心理应激',
+    guide: '请根据您<b>过去一周</b>的实际感受，评估以下情况对您的困扰程度：<b>0</b>=完全没有 <b>1</b>=轻度 <b>2</b>=中度 <b>3</b>=重度 <b>4</b>=极度。共12题。',
+    items: [
+      {n:1, t:'与工作相关的任何提示都会让我重新体验到当时的紧张感', d:'闯入性体验', r:false},
+      {n:2, t:'我会不由自主地想起工作中遇到的危险场景', d:'闯入性体验', r:false},
+      {n:3, t:'我好像仍然在经历那些危险的时刻', d:'闯入性体验', r:false},
+      {n:4, t:'我会做一些与工作危险相关的噩梦', d:'闯入性体验', r:false},
+      {n:5, t:'我尽量避免让我想起工作压力的事情或场景', d:'回避反应', r:false},
+      {n:6, t:'我回避与工作相关的谈话或讨论', d:'回避反应', r:false},
+      {n:7, t:'我感觉与周围的人疏远了', d:'回避反应', r:false},
+      {n:8, t:'我对曾经感兴趣的活动失去了兴趣', d:'回避反应', r:false},
+      {n:9, t:'我容易受到惊吓或感到紧张不安', d:'高警觉反应', r:false},
+      {n:10, t:'我很难集中注意力', d:'高警觉反应', r:false},
+      {n:11, t:'我难以入睡或经常惊醒', d:'高警觉反应', r:false},
+      {n:12, t:'我变得比平时更容易发怒或急躁', d:'高警觉反应', r:false},
+    ],
+    options: [
+      {v:0, l:'完全没有'}, {v:1, l:'轻度'}, {v:2, l:'中度'}, {v:3, l:'重度'}, {v:4, l:'极度'}
+    ],
+    dims: {
+      '闯入性体验': [1,2,3,4],
+      '回避反应': [5,6,7,8],
+      '高警觉反应': [9,10,11,12],
+    },
+    dimDescs: {
+      '闯入性体验': '高分表示创伤记忆反复侵入意识',
+      '回避反应': '高分表示对与压力事件相关的情境进行回避',
+      '高警觉反应': '高分表示持续处于高度警觉和紧张状态',
+    },
+    reverseItems: [],
+    maxPerDim: 16,
+    totalMax: 48,
+    stressLevels: [
+      {range:[0,12], level:'无明显应激', cls:'result-low', desc:'未出现明显的心理应激反应，心理状态正常。'},
+      {range:[13,24], level:'轻度应激', cls:'result-mid', desc:'存在一定程度的应激反应，建议定期复查关注变化趋势。'},
+      {range:[25,36], level:'中度应激', cls:'result-high', desc:'应激反应明显，可能影响日常工作和生活，建议进行心理评估。'},
+      {range:[37,48], level:'重度应激', cls:'result-high', desc:'应激反应严重，可能存在PTSD风险，强烈建议专业心理干预。'},
+    ]
+  },
+  { // 2: 安全心理状态量表
+    name: '安全心理状态量表',
+    fullName: '安全心理状态量表',
+    tabName: '安全心理',
+    guide: '请根据您在井控应急抢险工作中的实际情况进行自评：<b>1</b>=完全不符合 <b>2</b>=大部分不符合 <b>3</b>=有点不符合 <b>4</b>=有点符合 <b>5</b>=大部分符合 <b>6</b>=完全符合。共15题。',
+    items: [
+      {n:1, t:'在抢险作业前，我会主动预判可能存在的安全风险', d:'安全警觉性', r:false},
+      {n:2, t:'我能敏锐地察觉作业环境中的异常变化', d:'安全警觉性', r:false},
+      {n:3, t:'即使在熟悉的作业环境中，我也保持必要的警惕', d:'安全警觉性', r:false},
+      {n:4, t:'当安全防护措施不到位时，我会拒绝开始作业', d:'安全警觉性', r:false},
+      {n:5, t:'我会关注周围同事是否处于安全状态', d:'安全警觉性', r:false},
+      {n:6, t:'我严格遵守井控操作规程，从不因为熟练而简化步骤', d:'安全遵从性', r:false},
+      {n:7, t:'即使无人监督，我也会按规范佩戴和使用防护装备', d:'安全遵从性', r:false},
+      {n:8, t:'交班时我会详细交接安全相关的重要信息', d:'安全遵从性', r:false},
+      {n:9, t:'发现安全隐患时，我会第一时间上报', d:'安全遵从性', r:false},
+      {n:10, t:'我从不因为赶工期而降低安全标准', d:'安全遵从性', r:false},
+      {n:11, t:'我充分认识到井控抢险工作的高风险本质', d:'风险意识', r:false},
+      {n:12, t:'我了解轻微疏忽可能导致的严重后果', d:'风险意识', r:false},
+      {n:13, t:'我会主动学习事故案例来提升自己的风险意识', d:'风险意识', r:false},
+      {n:14, t:'我认为安全培训不是走过场，而是实实在在的生命保障', d:'风险意识', r:false},
+      {n:15, t:'在日常工作中，我把安全放在效率之上', d:'风险意识', r:false},
+    ],
+    options: [
+      {v:1, l:'完全不符合'}, {v:2, l:'大部分不符合'}, {v:3, l:'有点不符合'},
+      {v:4, l:'有点符合'}, {v:5, l:'大部分符合'}, {v:6, l:'完全符合'}
+    ],
+    dims: {
+      '安全警觉性': [1,2,3,4,5],
+      '安全遵从性': [6,7,8,9,10],
+      '风险意识': [11,12,13,14,15],
+    },
+    dimDescs: {
+      '安全警觉性': '高分表示在作业中保持高度警觉和风险预判意识',
+      '安全遵从性': '高分表示严格执行安全规范和流程',
+      '风险意识': '高分表示对安全风险有深刻认知和重视',
+    },
+    reverseItems: [],
+    maxPerDim: 30,
+    totalMax: 90,
+    safetyLevels: [
+      {range:[75,90], level:'优秀', cls:'result-low', desc:'安全心理素质优秀，安全意识和行为处于高水平。'},
+      {range:[60,74], level:'良好', cls:'result-low', desc:'安全心理素质良好，具备基本的安全心理保障。'},
+      {range:[45,59], level:'一般', cls:'result-mid', desc:'安全心理素质一般，存在部分薄弱环节，建议针对性强化。'},
+      {range:[15,44], level:'待提升', cls:'result-high', desc:'安全心理素质需重点关注，建议进行安全专项培训和评估。'},
+    ]
+  }
+];
+
+// ==================== DATA: 重大险情后创伤测评 ====================
+const scalesPostTrauma = [
+  { // 0: 重大险情后创伤测评
+    name: '重大险情后创伤测评',
+    fullName: '重大险情后创伤心理测评量表（PCL-5 改编版）',
+    tabName: '创伤测评',
+    guide: '请回忆您经历过的<b>最严重的一次井控应急抢险险情</b>，评估<b>过去一个月</b>内以下情况对您的影响程度：<b>0</b>=完全不影响 <b>1</b>=轻微影响 <b>2</b>=中度影响 <b>3</b>=严重影响 <b>4</b>=极度影响。共20题。',
+    items: [
+      {n:1, t:'与那次险情相关的记忆、想法或画面会不由自主地出现在脑海中', d:'闯入性再体验', r:false},
+      {n:2, t:'会反复做与那次险情有关的噩梦', d:'闯入性再体验', r:false},
+      {n:3, t:'突然感觉或表现得好像那次险情再次发生（如产生强烈心理反应）', d:'闯入性再体验', r:false},
+      {n:4, t:'接触到类似情境（如警报声、井喷画面）时，会产生强烈的心理或生理反应', d:'闯入性再体验', r:false},
+      {n:5, t:'尽量回避与那次险情有关的记忆、想法或感受', d:'回避与麻木', r:false},
+      {n:6, t:'尽量回避会使我回想起那次险情的外部事物（如地点、人物、活动、对话）', d:'回避与麻木', r:false},
+      {n:7, t:'对过去喜欢的重要活动失去了兴趣或参与的意愿', d:'回避与麻木', r:false},
+      {n:8, t:'感觉与周围的人疏远或隔离开来', d:'回避与麻木', r:false},
+      {n:9, t:'难以体验到愉悦、满足或爱的积极情感', d:'认知情绪负性改变', r:false},
+      {n:10, t:'对自己、他人或世界产生负面的信念（如"我很糟糕""没有人可以信任""世界很危险"）', d:'认知情绪负性改变', r:false},
+      {n:11, t:'为那次险情或其后果而过分责备自己或他人', d:'认知情绪负性改变', r:false},
+      {n:12, t:'持续处于恐惧、愤怒、内疚或羞耻等负面情绪中', d:'认知情绪负性改变', r:false},
+      {n:13, t:'难以回忆起那次险情的重要细节', d:'认知情绪负性改变', r:false},
+      {n:14, t:'变得比平时更容易发怒或出现攻击性行为', d:'高警觉反应', r:false},
+      {n:15, t:'经常冒险或做出可能伤害自己的行为', d:'高警觉反应', r:false},
+      {n:16, t:'处于过度警觉状态（如持续观察周围、警惕危险信号）', d:'高警觉反应', r:false},
+      {n:17, t:'容易被突然的声音或动作惊吓到', d:'高警觉反应', r:false},
+      {n:18, t:'难以集中注意力', d:'高警觉反应', r:false},
+      {n:19, t:'上述情况对您的工作表现或岗位胜任造成了多大的影响', d:'社会功能影响', r:false},
+      {n:20, t:'上述情况对您的家庭生活或社交关系造成了多大的影响', d:'社会功能影响', r:false},
+    ],
+    options: [
+      {v:0, l:'完全不影响'}, {v:1, l:'轻微影响'}, {v:2, l:'中度影响'}, {v:3, l:'严重影响'}, {v:4, l:'极度影响'}
+    ],
+    dims: {
+      '闯入性再体验': [1,2,3,4],
+      '回避与麻木': [5,6,7,8],
+      '认知情绪负性改变': [9,10,11,12,13],
+      '高警觉反应': [14,15,16,17,18],
+      '社会功能影响': [19,20],
+    },
+    dimDescs: {
+      '闯入性再体验': '高分表示创伤记忆反复侵入意识，难以控制',
+      '回避与麻木': '高分表示对创伤相关情境的回避和情感麻木',
+      '认知情绪负性改变': '高分表示认知和情绪出现显著负性改变',
+      '高警觉反应': '高分表示持续处于高度警觉和反应过激状态',
+      '社会功能影响': '高分表示创伤反应对工作和生活造成明显影响',
+    },
+    reverseItems: [],
+    maxPerDim: { '闯入性再体验': 16, '回避与麻木': 16, '认知情绪负性改变': 20, '高警觉反应': 20, '社会功能影响': 8 },
+    totalMax: 80,
+    traumaLevels: [
+      {range:[0,20], level:'无明显创伤反应', cls:'result-low', desc:'未出现明显的创伤后应激反应，心理恢复良好。'},
+      {range:[21,40], level:'轻度创伤反应', cls:'result-mid', desc:'存在一定程度的创伤后应激症状，建议定期复查，关注变化趋势。'},
+      {range:[41,60], level:'中度创伤反应', cls:'result-high', desc:'创伤后应激症状较为明显，可能存在PTSD风险，建议进行专业心理评估和干预。'},
+      {range:[61,80], level:'重度创伤反应', cls:'result-high', desc:'创伤后应激症状严重，高度疑似PTSD，强烈建议立即安排专业心理治疗并评估是否暂离高危岗位。'},
+    ]
+  }
+];
+
+// ==================== STATE ====================
+let currentMode = 'new';
+let scales = [];
+let currentTab = 0;
+
+// ==================== MODE SWITCHING ====================
+function switchMode(mode) {
+  if (currentMode === mode && scales.length > 0) return;
+  currentMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  const subtitles = { new: '新入职人员心理测评', active: '在岗人员心理筛查', trauma: '重大险情后创伤测评' };
+  document.getElementById('headerSubtitle').textContent = subtitles[mode] || '';
+  const modeScales = { new: scalesNew, active: scalesInService, trauma: scalesPostTrauma };
+  scales = [...(modeScales[mode] || scalesPostTrauma)];
+  renderTabs();
+  renderAll();
+  currentTab = 0;
+  switchTab(0);
+  for (let i = 0; i < scales.length; i++) loadAnswers(i);
+  updateProgress();
+  for (let i = 0; i < scales.length; i++) updateTabStatus(i);
+}
+
+// ==================== DYNAMIC TABS & PANELS ====================
+function renderTabs() {
+  const tabNav = document.getElementById('tabNav');
+  tabNav.innerHTML = '';
+  for (let i = 0; i < scales.length; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn';
+    btn.innerHTML = '<span class="tab-badge">' + (i+1) + '</span>' + (scales[i].tabName || scales[i].name);
+    btn.onclick = function() { switchTab(i); };
+    tabNav.appendChild(btn);
+  }
+  const resultBtn = document.createElement('button');
+  resultBtn.className = 'tab-btn';
+  resultBtn.id = 'tabResult';
+  resultBtn.innerHTML = '<span class="tab-badge">★</span>' + {new:'测评结果',active:'筛查结果',trauma:'测评结果'}[currentMode];
+  resultBtn.onclick = function() { switchTab(scales.length); };
+  tabNav.appendChild(resultBtn);
+}
+
+function renderAll() {
+  document.querySelectorAll('.scale-panel').forEach(function(el) { el.remove(); });
+  var resultPanel = document.getElementById('panelResult');
+  var container = resultPanel.parentNode;
+  for (var i = scales.length - 1; i >= 0; i--) {
+    (function(idx) {
+      var sc = scales[idx];
+      var panel = document.createElement('div');
+      panel.className = 'card tab-panel scale-panel';
+      panel.id = 'panel' + idx;
+      panel.style.display = 'none';
+      var prevBtn = idx > 0 ? '<button class="btn btn-outline" onclick="switchTab(' + (idx-1) + ')">← 上一量表</button>' : '';
+      var isLast = idx === scales.length - 1;
+      var nextBtn = isLast
+        ? '<button class="btn btn-success" onclick="calcAll()">' + {new:'完成测评，查看结果',active:'完成筛查，查看结果',trauma:'完成测评，查看结果'}[currentMode] + '</button>'
+        : '<button class="btn btn-primary" onclick="nextTab(' + idx + ')">下一量表 →</button>';
+      panel.innerHTML = '<h2>量表' + (idx+1) + '：' + (sc.fullName || sc.name) + '</h2><div class="guide">' + sc.guide + '</div><form id="form' + idx + '"></form><div class="btn-row">' + prevBtn + '<button class="btn btn-outline" onclick="switchTab(' + idx + ',true)">清空重填</button>' + nextBtn + '</div>';
+      container.insertBefore(panel, resultPanel);
+    })(i);
+  }
+  for (var j = 0; j < scales.length; j++) renderScale(j);
+}
+
+function getTotalItems() {
+  return scales.reduce(function(s, sc) { return s + sc.items.length; }, 0);
+}
+
+// ==================== RENDER SCALE ITEMS ====================
+function renderScale(idx) {
+  var sc = scales[idx];
+  var form = document.getElementById('form' + idx);
+  if (!form) return;
+  form.innerHTML = '';
+  sc.items.forEach(function(item) {
+    var isRev = sc.reverseItems.includes(item.n);
+    var div = document.createElement('div');
+    div.className = 'scale-item';
+    div.innerHTML = '<span class="item-num' + (isRev ? ' rev' : '') + '">' + item.n + '</span>' +
+      '<span class="item-text">' + item.t + '</span>' +
+      '<span class="item-dim' + (isRev ? ' rev-dim' : '') + '">' + item.d + (isRev ? ' ※R' : '') + '</span>' +
+      '<span class="radio-group">' +
+      sc.options.map(function(opt) {
+        return '<span class="radio-opt"><input type="radio" name="q' + idx + '_' + item.n + '" id="q' + idx + '_' + item.n + '_' + opt.v + '" value="' + opt.v + '" onchange="onAnswer(' + idx + ')"><label for="q' + idx + '_' + item.n + '_' + opt.v + '">' + opt.v + '</label>' + (opt.l ? '<span class="opt-label">' + opt.l + '</span>' : '') + '</span>';
+      }).join('') +
+      '</span>';
+    form.appendChild(div);
+  });
+}
+
+// ==================== NAVIGATION ====================
+function switchTab(idx, reset) {
+  if (reset && idx < scales.length) {
+    var form = document.getElementById('form' + idx);
+    if (form) {
+      form.querySelectorAll('input[type="radio"]').forEach(function(r) { r.checked = false; });
+    }
+    sessionStorage.removeItem(currentMode + '_scale_' + idx);
+    updateProgress();
+  }
+  document.querySelectorAll('.tab-panel').forEach(function(p) { p.style.display = 'none'; });
+  if (idx < scales.length) {
+    document.getElementById('panel' + idx).style.display = 'block';
+  } else {
+    document.getElementById('panelResult').style.display = 'block';
+  }
+  var btns = document.querySelectorAll('#tabNav .tab-btn');
+  btns.forEach(function(b, i) { b.classList.remove('active'); if (i === idx) b.classList.add('active'); });
+  currentTab = idx;
+  var target = idx < scales.length ? document.getElementById('panel' + idx) : document.getElementById('panelResult');
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function nextTab(fromIdx) {
+  var sc = scales[fromIdx];
+  var answered = countAnswered(fromIdx);
+  if (answered < sc.items.length) {
+    showToast('还有 ' + (sc.items.length - answered) + ' 题未作答，建议完成后再切换');
+  }
+  var next = fromIdx + 1;
+  if (next >= scales.length) next = scales.length;
+  switchTab(next);
+}
+
+// ==================== ANSWER TRACKING ====================
+function onAnswer(idx) { saveAnswers(idx); updateProgress(); updateTabStatus(idx); }
+
+function countAnswered(idx) {
+  var form = document.getElementById('form' + idx);
+  if (!form) return 0;
+  var sc = scales[idx];
+  var count = 0;
+  sc.items.forEach(function(item) {
+    if (form.querySelector('input[name="q' + idx + '_' + item.n + '"]:checked')) count++;
+  });
+  return count;
+}
+
+function saveAnswers(idx) {
+  var form = document.getElementById('form' + idx);
+  if (!form) return;
+  var sc = scales[idx];
+  var answers = {};
+  sc.items.forEach(function(item) {
+    var checked = form.querySelector('input[name="q' + idx + '_' + item.n + '"]:checked');
+    if (checked) answers[item.n] = parseInt(checked.value);
+  });
+  sessionStorage.setItem(currentMode + '_scale_' + idx, JSON.stringify(answers));
+}
+
+function loadAnswers(idx) {
+  var saved = sessionStorage.getItem(currentMode + '_scale_' + idx);
+  if (!saved) return;
+  var answers = JSON.parse(saved);
+  var form = document.getElementById('form' + idx);
+  if (!form) return;
+  Object.keys(answers).forEach(function(num) {
+    var radio = form.querySelector('input[name="q' + idx + '_' + num + '"][value="' + answers[num] + '"]');
+    if (radio) radio.checked = true;
+  });
+}
+
+function updateProgress() {
+  var totalAnswered = 0;
+  var total = getTotalItems();
+  for (var i = 0; i < scales.length; i++) totalAnswered += countAnswered(i);
+  var pct = total > 0 ? Math.round((totalAnswered / total) * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = totalAnswered + ' / ' + total + ' 题已完成';
+}
+
+function updateTabStatus(idx) {
+  var btns = document.querySelectorAll('#tabNav .tab-btn');
+  var answered = countAnswered(idx);
+  var sc = scales[idx];
+  if (btns[idx]) {
+    btns[idx].classList.toggle('done', answered >= sc.items.length);
+  }
+}
+
+// ==================== SCORING ====================
+function getScore(idx, itemNum) {
+  var form = document.getElementById('form' + idx);
+  if (!form) return null;
+  var checked = form.querySelector('input[name="q' + idx + '_' + itemNum + '"]:checked');
+  return checked ? parseInt(checked.value) : null;
+}
+
+function calcScale(idx) {
+  var sc = scales[idx];
+  var dimScores = {};
+  var scores = {};
+  var dimKeys = Object.keys(sc.dims);
+  for (var di = 0; di < dimKeys.length; di++) {
+    var dim = dimKeys[di];
+    var itemNums = sc.dims[dim];
+    var total = 0, count = 0;
+    var items = [];
+    for (var ni = 0; ni < itemNums.length; ni++) {
+      var n = itemNums[ni];
+      var raw = getScore(idx, n);
+      if (raw === null) raw = 0;
+      var item = sc.items.find(function(it) { return it.n === n; });
+      var score = raw;
+      if (item && item.r) {
+        var maxVal = sc.options[sc.options.length - 1].v;
+        var minVal = sc.options[0].v;
+        score = maxVal + minVal - raw;
+      }
+      scores[n] = score;
+      total += score; count++;
+      items.push({ n: n, raw: raw, score: score, rev: item ? item.r : false });
+    }
+    dimScores[dim] = { total: total, count: count, items: items };
+  }
+  var totalScore = 0;
+  Object.values(dimScores).forEach(function(d) { totalScore += d.total; });
+  return { dimScores: dimScores, totalScore: totalScore, scores: scores };
+}
+
+function calcAll() {
+  saveAnswers(currentTab);
+  var allDone = true;
+  var missingInfo = [];
+  for (var i = 0; i < scales.length; i++) {
+    var answered = countAnswered(i);
+    if (answered < scales[i].items.length) {
+      allDone = false;
+      missingInfo.push(scales[i].name + ': ' + answered + '/' + scales[i].items.length + '题');
+    }
+  }
+  if (!allDone) {
+    showToast('以下量表尚未完成：' + missingInfo.join('; '));
+    for (var i = 0; i < scales.length; i++) {
+      if (countAnswered(i) < scales[i].items.length) { switchTab(i); break; }
+    }
+    return;
+  }
+  var results = [];
+  for (var i = 0; i < scales.length; i++) results.push(calcScale(i));
+  window._resultName = document.getElementById('infoName').value.trim();
+  window._resultJob = document.getElementById('infoJob').value.trim();
+  renderResults(results);
+  switchTab(scales.length);
+}
+
+// ==================== RENDER RESULTS ====================
+function renderResults(results) {
+  if (currentMode === 'new') renderResultsNew(results);
+  else if (currentMode === 'active') renderResultsActive(results);
+  else renderResultsTrauma(results);
+}
+
+function renderResultsNew(results) {
+  var container = document.getElementById('resultContent');
+  var now = new Date();
+  var dateStr = now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日';
+  var html = '<div class="info-grid"><div class="info-item"><span class="info-label">测评单位：</span><span class="info-value">应急中心</span></div><div class="info-item"><span class="info-label">测评日期：</span><span class="info-value">' + dateStr + '</span></div><div class="info-item"><span class="info-label">姓名：</span><span class="info-value">' + (window._resultName || getPersonName() || '（未填写）') + '</span></div><div class="info-item"><span class="info-label">岗位：</span><span class="info-value">' + (window._resultJob || getPersonJob() || '（未填写）') + '</span></div></div>';
+
+  html += '<div class="result-section"><h3>一、CBF-PI-B 大五人格量表结果（满分48分/维度）</h3>';
+  html += '<table class="result-table"><thead><tr><th>维度</th><th>得分</th><th>均分</th><th>得分柱状图</th><th>高分解释</th></tr></thead><tbody>';
+  var cbfResult = results[0], cbfScale = scales[0];
+  Object.keys(cbfResult.dimScores).forEach(function(dim) {
+    var data = cbfResult.dimScores[dim];
+    var avg = (data.total/data.count).toFixed(1);
+    var pct = Math.round((data.total/cbfScale.maxPerDim)*100);
+    html += '<tr><td class="dim-name">' + dim + '</td><td><b>' + data.total + '</b></td><td>' + avg + '</td><td><div class="result-bar-wrap"><div class="result-bar"><div class="result-bar-fill" style="width:' + pct + '%;background:#4a90d9"></div></div><span style="font-size:11px">' + pct + '%</span></div></td><td style="text-align:left;font-size:12px">' + (cbfScale.dimDescs[dim]||'') + '</td></tr>';
+  });
+  html += '</tbody></table></div>';
+
+  html += '<div class="result-section"><h3>二、PSS 感知压力量表结果（满分56分）</h3>';
+  html += '<table class="result-table"><thead><tr><th>指标</th><th>得分</th><th>满分</th><th>得分柱状图</th><th>说明</th></tr></thead><tbody>';
+  var pssResult = results[1], pssScale = scales[1];
+  Object.keys(pssResult.dimScores).forEach(function(dim) {
+    var data = pssResult.dimScores[dim];
+    var pct = Math.round((data.total/pssScale.maxPerDim)*100);
+    html += '<tr><td class="dim-name">' + dim + '</td><td><b>' + data.total + '</b></td><td>' + pssScale.maxPerDim + '</td><td><div class="result-bar-wrap"><div class="result-bar"><div class="result-bar-fill" style="width:' + pct + '%;background:#f57c00"></div></div><span style="font-size:11px">' + pct + '%</span></div></td><td style="text-align:left;font-size:12px">' + pssScale.dimDescs[dim] + '</td></tr>';
+  });
+  var pssTotal = pssResult.totalScore;
+  var levelInfo = { level:'未知', cls:'', desc:'' };
+  pssScale.norms.forEach(function(norm) { if (pssTotal>=norm.range[0]&&pssTotal<=norm.range[1]) levelInfo=norm; });
+  html += '<tr style="background:#f8fafc;font-weight:700"><td>PSS总分</td><td class="' + levelInfo.cls + '">' + pssTotal + '</td><td>' + pssScale.totalMax + '</td><td><div class="result-bar-wrap"><div class="result-bar"><div class="result-bar-fill" style="width:' + Math.round(pssTotal/pssScale.totalMax*100) + '%;background:#c62828"></div></div><span style="font-size:11px">' + Math.round(pssTotal/pssScale.totalMax*100) + '%</span></div></td><td class="' + levelInfo.cls + '" style="text-align:left">' + levelInfo.level + '：' + levelInfo.desc + '</td></tr>';
+  html += '</tbody></table></div>';
+
+  html += '<div class="result-section"><h3>三、SCSQ 应对方式量表结果</h3>';
+  html += '<table class="result-table"><thead><tr><th>指标</th><th>原始分</th><th>满分</th><th>得分柱状图</th><th>说明</th></tr></thead><tbody>';
+  var scsqResult = results[2], scsqScale = scales[2];
+  var positiveScore=0, negativeScore=0;
+  Object.keys(scsqResult.dimScores).forEach(function(dim) {
+    var data = scsqResult.dimScores[dim];
+    var maxVal = scsqScale.maxPerDim[dim];
+    var pct = Math.round((data.total/maxVal)*100);
+    html += '<tr><td class="dim-name">' + dim + '</td><td><b>' + data.total + '</b></td><td>' + maxVal + '</td><td><div class="result-bar-wrap"><div class="result-bar"><div class="result-bar-fill" style="width:' + pct + '%;background:' + (dim==='积极应对'?'#2e7d32':'#c62828') + '"></div></div><span style="font-size:11px">' + pct + '%</span></div></td><td style="text-align:left;font-size:12px">' + scsqScale.dimDescs[dim] + '</td></tr>';
+    if (dim==='积极应对') positiveScore=data.total; else negativeScore=data.total;
+  });
+  var tendency = positiveScore-negativeScore;
+  var tendText = tendency>0?'偏向积极应对':tendency<0?'偏向消极应对':'积极/消极倾向均衡';
+  var tendCls = tendency>0?'result-low':tendency<0?'result-high':'result-mid';
+  html += '<tr style="background:#f8fafc;font-weight:700"><td>应对倾向</td><td class="' + tendCls + '" colspan="2">' + tendText + '（差值=' + tendency + '）</td><td colspan="2" style="text-align:left;font-size:12px">积极分 - 消极分，>0偏积极，<0偏消极</td></tr>';
+  html += '</tbody></table></div>';
+
+  html += '<div class="result-section"><h3>四、井控胜任力量表结果（心理承受能力维度，满分30分/维度，总分180分）</h3>';
+  html += '<table class="result-table"><thead><tr><th>维度</th><th>得分</th><th>均分</th><th>得分柱状图</th><th>水平评估</th></tr></thead><tbody>';
+  var jkResult = results[3], jkScale = scales[3];
+  var jkTotal = 0;
+  Object.keys(jkResult.dimScores).forEach(function(dim) {
+    var data = jkResult.dimScores[dim];
+    var avg = (data.total/data.count).toFixed(1);
+    var pct = Math.round((data.total/jkScale.maxPerDim)*100);
+    jkTotal += data.total;
+    var levelEval = pct>=80?'优秀':pct>=60?'良好':pct>=40?'一般':'待提升';
+    html += '<tr><td class="dim-name">' + dim + '</td><td><b>' + data.total + '</b></td><td>' + avg + '</td><td><div class="result-bar-wrap"><div class="result-bar"><div class="result-bar-fill" style="width:' + pct + '%;background:#4a90d9"></div></div><span style="font-size:11px">' + pct + '%</span></div></td><td>' + levelEval + '</td></tr>';
+  });
+  var jkTotalPct = Math.round((jkTotal/jkScale.totalMax)*100);
+  html += '<tr style="background:#f8fafc;font-weight:700"><td>全量表总分</td><td><b>' + jkTotal + '</b></td><td>' + (jkTotal/30).toFixed(1) + '</td><td><div class="result-bar-wrap"><div class="result-bar"><div class="result-bar-fill" style="width:' + jkTotalPct + '%;background:#1565c0"></div></div><span style="font-size:11px">' + jkTotalPct + '%</span></div></td><td>满分180分</td></tr>';
+  html += '</tbody></table></div>';
+
+  var jkLevel = jkTotalPct>=83?'A':jkTotalPct>=67?'B':jkTotalPct>=50?'C':'D';
+  var cbfDimScores = {};
+  // 修复：正则表达式转义错误 - 将 \\( 改为 \(
+  Object.keys(cbfResult.dimScores).forEach(function(dim) {
+    var data = cbfResult.dimScores[dim];
+    var short = dim.replace(/\([NCOAE]\)/, '').trim();
+    cbfDimScores[short] = { total:data.total, avg:data.total/data.count, pct:Math.round(data.total/48*100) };
+  });
+  var jobs=[];
+  var jkAdvice='';
+  if (jkLevel==='A') {
+    jkAdvice='<b style="color:#2e7d32">高度胜任</b>——心理素质优秀，完全具备从事井控应急抢险一线工作的心理条件。';
+    jobs.push({type:'一线抢险型',role:'井控工程师 / 抢险队长',desc:'心理耐受力强、危机决策果断，适合直接参与现场抢险指挥与操作。',match:'高'});
+    jobs.push({type:'指挥协调型',role:'应急指挥 / 调度协调',desc:'高压下保持决策清晰，适合应急处置的统筹协调。',match:'高'});
+  } else if (jkLevel==='B') {
+    jkAdvice='<b style="color:#1565c0">基本胜任</b>——心理素质良好，可从事井控应急抢险工作，建议先从辅助岗位开始锻炼。';
+    jobs.push({type:'一线辅助型',role:'设备操作员 / 安全监督员',desc:'在他人指导下可胜任一线辅助性工作，积累经验后可向核心岗位发展。',match:'中'});
+    jobs.push({type:'安全监控型',role:'HSE专员 / 安全巡检',desc:'具备基本安全意识和风险感知能力，适合安全监督类岗位。',match:'中'});
+  } else if (jkLevel==='C') {
+    jkAdvice='<b style="color:#f57c00">需要提升</b>——心理素质有待加强，暂不建议直接从事一线抢险，推荐参加专项心理训练后评估上岗。';
+    jobs.push({type:'后勤支持型',role:'物资保障 / 后勤管理',desc:'一线压力较大时建议转向后勤保障岗位，待心理素质提升后可重新评估。',match:'低'});
+    jobs.push({type:'技术支持型',role:'培训助理 / 资料管理',desc:'脱离直接抢险压力，发挥细致严谨特质，从事技术辅助工作。',match:'中'});
+  } else {
+    jkAdvice='<b style="color:#c62828">暂不适合</b>——心理承受能力与井控应急抢险要求存在较大差距，建议考虑非抢险类岗位。';
+    jobs.push({type:'后勤保障型',role:'物资管理 / 行政支持',desc:'适合远离一线高压环境的后勤岗位。',match:'高'});
+    jobs.push({type:'技术支持型',role:'档案管理 / 数据录入',desc:'在规范性要求较高的文职岗位发挥价值。',match:'高'});
+  }
+  var n = cbfDimScores['神经质'], c = cbfDimScores['严谨性'], a = cbfDimScores['宜人性'], o = cbfDimScores['开放性'], e = cbfDimScores['外向性'];
+  if (c && c.pct>=70 && n && n.pct<=40) jobs.push({type:'规范操作型',role:'标准流程专员 / 质量审核',desc:'严谨细致且情绪稳定，适合需要严格执行规范的岗位。',match:'高'});
+  if (e && e.pct>=60 && a && a.pct>=60) jobs.push({type:'团队沟通型',role:'培训讲师 / 对外联络',desc:'善于人际交往和团队协作，适合培训与沟通协调工作。',match:'中'});
+  if (o && o.pct>=65 && n && n.pct<=45) jobs.push({type:'创新改进型',role:'应急预案编制 / 技术改良',desc:'思维开放且情绪稳定，适合应急方案的优化与技术创新。',match:'中'});
+  if (n && n.pct>=65) jobs.push({type:'稳定环境型',role:'数据分析 / 文档管理',desc:'情绪敏感度较高，建议选择工作环境相对稳定的岗位。',match:'高'});
+  var seenTypes={}, uniqueJobs=[];
+  jobs.forEach(function(j) { if (!seenTypes[j.type]) { seenTypes[j.type]=true; uniqueJobs.push(j); } });
+  html += '<div class="result-section"><h3>五、岗位胜任力评估与建议</h3>';
+  html += '<div style="margin-bottom:16px;padding:14px;background:#f8fafc;border-radius:6px;"><p style="font-size:14px;font-weight:600;margin-bottom:6px;">井控应急抢险岗位心理胜任评估</p><p style="font-size:13px;color:var(--text-light);line-height:1.8;">' + jkAdvice + '</p></div>';
+  html += '<p style="font-size:14px;font-weight:600;margin-bottom:8px;">适合岗位类型推荐</p>';
+  html += '<table class="result-table"><thead><tr><th>岗位类型</th><th>推荐岗位</th><th>匹配度</th><th>推荐理由</th></tr></thead><tbody>';
+  uniqueJobs.forEach(function(j) {
+    var mc = j.match==='高'?'#2e7d32':j.match==='中'?'#1565c0':'#f57c00';
+    html += '<tr><td class="dim-name">' + j.type + '</td><td>' + j.role + '</td><td><b style="color:' + mc + '">' + j.match + '</b></td><td style="text-align:left;font-size:12px">' + j.desc + '</td></tr>';
+  });
+  html += '</tbody></table></div>';
+  html += '<div class="result-section"><h3>六、综合评价</h3><p style="font-size:13px;color:var(--text-light);line-height:1.8;padding:12px;background:#f8fafc;border-radius:6px;"><b>人格特质：</b>大五人格各维度得分如上表所示。<br><b>心理稳定：</b>PSS总分' + pssTotal + '分（满分56），' + levelInfo.desc + '<br><b>应对方式：</b>' + tendText + '，积极应对得分' + positiveScore + '分，消极应对得分' + negativeScore + '分。<br><b>井控胜任力：</b>总得分' + jkTotal + '分（满分180），综合等级<b>' + jkLevel + '</b>级。<br><br><em>以上结果由系统自动统计生成，仅供内部参考。</em></p></div>';
+  container.innerHTML = html;
+}
+
+function renderResultsActive(results) {
+  var container = document.getElementById('resultContent');
+  var now = new Date();
+  var dateStr = now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日';
+  var html = '<div class="info-grid"><div class="info-item"><span class="info-label">筛查单位：</span><span class="info-value">应急中心</span></div><div class="info-item"><span class="info-label">筛查日期：</span><span class="info-value">' + dateStr + '</span></div><div class="info-item"><span class="info-label">姓名：</span><span class="info-value">' + (window._resultName || getPersonName() || '（未填写）') + '</span></div><div class="info-item"><span class="info-label">岗位：</span><span class="info-value">' + (window._resultJob || getPersonJob() || '（未填写）') + '</span></div></div>';
+
+  var brn = results[0], brnScale = scales[0];
+  html += '<div class="result-section"><h3>一、职业心理倦怠评估（满分90分）</h3>';
+  html += '<table class="result-table"><thead><tr><th>维度</th><th>得分</th><th>满分</th><th>得分柱状图</th><th>说明</th></tr></thead><tbody>';
+  Object.keys(brn.dimScores).forEach(function(dim) {
+    var data = brn.dimScores[dim];
+    var mx = brnScale.maxPerDim[dim];
+    var pct = Math.round((data.total/mx)*100);
+    html += '<tr><td class="dim-name">' + dim + '</td><td><b>' + data.total + '</b></td><td>' + mx + '</td><td><div class="result-bar-wrap"><div class="result-bar"><div class="result-bar-fill" style="width:' + pct + '%;background:' + (dim==='成就感降低'?'#2e7d32':'#c62828') + '"></div></div><span style="font-size:11px">' + pct + '%</span></div></td><td style="text-align:left;font-size:12px">' + brnScale.dimDescs[dim] + '</td></tr>';
+  });
+  var brnTotal = brn.totalScore;
+  var brnLevel=brnScale.burnoutLevels[0];
+  brnScale.burnoutLevels.forEach(function(lv) { if (brnTotal>=lv.range[0]&&brnTotal<=lv.range[1]) brnLevel=lv; });
+  html += '<tr style="background:#f8fafc;font-weight:700"><td>倦怠总分</td><td class="' + brnLevel.cls + '"><b>' + brnTotal + '</b></td><td>90</td><td><div class="result-bar-wrap"><div class="result-bar"><div class="result-bar-fill" style="width:' + Math.round(brnTotal/90*100) + '%;background:#c62828"></div></div><span style="font-size:11px">' + Math.round(brnTotal/90*100) + '%</span></div></td><td class="' + brnLevel.cls + '" style="text-align:left;font-weight:700">' + brnLevel.level + '：' + brnLevel.desc + '</td></tr>';
+  html += '</tbody></table></div>';
+
+  var stress = results[1], stressScale = scales[1];
+  html += '<div class="result-section"><h3>二、心理应激筛查结果（满分48分）</h3>';
+  html += '<table class="result-table"><thead><tr><th>维度</th><th>得分</th><th>满分</th><th>得分柱状图</th><th>说明</th></tr></thead><tbody>';
+  Object.keys(stress.dimScores).forEach(function(dim) {
+    var data = stress.dimScores[dim];
+    var pct = Math.round((data.total/stressScale.maxPerDim)*100);
+    html += '<tr><td class="dim-name">' + dim + '</td><td><b>' + data.total + '</b></td><td>' + stressScale.maxPerDim + '</td><td><div class="result-bar-wrap"><div class="result-bar"><div class="result-bar-fill" style="width:' + pct + '%;background:#f57c00"></div></div><span style="font-size:11px">' + pct + '%</span></div></td><td style="text-align:left;font-size:12px">' + stressScale.dimDescs[dim] + '</td></tr>';
+  });
+  var stressTotal = stress.totalScore;
+  var stressLevel=stressScale.stressLevels[0];
+  stressScale.stressLevels.forEach(function(lv) { if (stressTotal>=lv.range[0]&&stressTotal<=lv.range[1]) stressLevel=lv; });
+  html += '<tr style="background:#f8fafc;font-weight:700"><td>应激总分</td><td class="' + stressLevel.cls + '"><b>' + stressTotal + '</b></td><td>48</td><td><div class="result-bar-wrap"><div class="result-bar"><div class="result-bar-fill" style="width:' + Math.round(stressTotal/48*100) + '%;background:#c62828"></div></div><span style="font-size:11px">' + Math.round(stressTotal/48*100) + '%</span></div></td><td class="' + stressLevel.cls + '" style="text-align:left;font-weight:700">' + stressLevel.level + '：' + stressLevel.desc + '</td></tr>';
+  html += '</tbody></table></div>';
+
+  var safe = results[2], safeScale = scales[2];
+  html += '<div class="result-section"><h3>三、安全心理状态评估（满分30分/维度，总分90分）</h3>';
+  html += '<table class="result-table"><thead><tr><th>维度</th><th>得分</th><th>满分</th><th>得分柱状图</th><th>水平评估</th></tr></thead><tbody>';
+  var safeTotal = 0;
+  Object.keys(safe.dimScores).forEach(function(dim) {
+    var data = safe.dimScores[dim];
+    var pct = Math.round((data.total/safeScale.maxPerDim)*100);
+    safeTotal += data.total;
+    var ev = pct>=80?'优秀':pct>=60?'良好':pct>=40?'一般':'待提升';
+    html += '<tr><td class="dim-name">' + dim + '</td><td><b>' + data.total + '</b></td><td>' + safeScale.maxPerDim + '</td><td><div class="result-bar-wrap"><div class="result-bar"><div class="result-bar-fill" style="width:' + pct + '%;background:#4a90d9"></div></div><span style="font-size:11px">' + pct + '%</span></div></td><td>' + ev + '</td></tr>';
+  });
+  var safeLevel=safeScale.safetyLevels[0];
+  safeScale.safetyLevels.forEach(function(lv) { if (safeTotal>=lv.range[0]&&safeTotal<=lv.range[1]) safeLevel=lv; });
+  html += '<tr style="background:#f8fafc;font-weight:700"><td>安全总分</td><td class="' + safeLevel.cls + '"><b>' + safeTotal + '</b></td><td>90</td><td><div class="result-bar-wrap"><div class="result-bar"><div class="result-bar-fill" style="width:' + Math.round(safeTotal/90*100) + '%;background:#1565c0"></div></div><span style="font-size:11px">' + Math.round(safeTotal/90*100) + '%</span></div></td><td class="' + safeLevel.cls + '" style="font-weight:700">' + safeLevel.level + '：' + safeLevel.desc + '</td></tr>';
+  html += '</tbody></table></div>';
+
+  var riskScore = (brnLevel.level==='重度倦怠'?3:brnLevel.level==='中度倦怠'?2:brnLevel.level==='轻度倦怠'?1:0)
+    + (stressLevel.level==='重度应激'?3:stressLevel.level==='中度应激'?2:stressLevel.level==='轻度应激'?1:0)
+    + (safeLevel.level==='待提升'?2:safeLevel.level==='一般'?1:0);
+  var overallRisk, overallCls, overallAdvice;
+  if (riskScore >= 6) {
+    overallRisk='紧急关注'; overallCls='result-high';
+    overallAdvice='综合筛查显示多项指标存在严重风险。强烈建议：(1)立即安排专业心理评估和疏导；(2)评估是否适合继续从事高危一线工作；(3)建立定期心理监测机制；(4)启动员工关爱和心理支持计划。';
+  } else if (riskScore >= 4) {
+    overallRisk='高风险'; overallCls='result-high';
+    overallAdvice='多项筛查指标显示存在明显心理风险。建议：(1)安排针对性心理辅导；(2)适当调休或调整工作强度；(3)加强安全监督和同伴支持；(4)一个月后复查。';
+  } else if (riskScore >= 2) {
+    overallRisk='中风险'; overallCls='result-mid';
+    overallAdvice='部分筛查指标存在一定风险。建议：(1)关注工作压力管理，合理安排调休；(2)定期进行心理状态复查；(3)开展压力管理和心理韧性培训。';
+  } else {
+    overallRisk='低风险'; overallCls='result-low';
+    overallAdvice='综合筛查未发现明显心理风险，在岗人员心理状态良好。建议：(1)继续保持良好的工作生活平衡；(2)定期参加心理健康培训和团队建设活动；(3)每半年进行一次心理状态复查。';
+  }
+  html += '<div class="result-section"><h3>四、综合筛查结论与建议</h3>';
+  html += '<div style="margin-bottom:12px;padding:14px;background:#f8fafc;border-radius:6px;"><p style="font-size:14px;font-weight:600;margin-bottom:4px;">综合风险等级：<span class="' + overallCls + '" style="font-size:18px">' + overallRisk + '</span></p></div>';
+  html += '<div style="padding:14px;background:#f8fafc;border-radius:6px;margin-bottom:12px;"><p style="font-size:13px;font-weight:600;margin-bottom:6px;">各维度评估汇总</p>';
+  html += '<table class="result-table"><thead><tr><th>筛查项目</th><th>得分/满分</th><th>等级</th><th>风险状态</th></tr></thead><tbody>';
+  html += '<tr><td class="dim-name">职业心理倦怠</td><td>' + brnTotal + ' / 90</td><td>' + brnLevel.level + '</td><td class="' + brnLevel.cls + '">' + (brnLevel.level==='无明显倦怠'?'正常':'需关注') + '</td></tr>';
+  html += '<tr><td class="dim-name">心理应激筛查</td><td>' + stressTotal + ' / 48</td><td>' + stressLevel.level + '</td><td class="' + stressLevel.cls + '">' + (stressLevel.level==='无明显应激'?'正常':'需关注') + '</td></tr>';
+  html += '<tr><td class="dim-name">安全心理状态</td><td>' + safeTotal + ' / 90</td><td>' + safeLevel.level + '</td><td class="' + safeLevel.cls + '">' + (safeLevel.level==='优秀'||safeLevel.level==='良好'?'正常':'需关注') + '</td></tr>';
+  html += '</tbody></table></div>';
+  html += '<p style="font-size:13px;color:var(--text-light);line-height:1.8;padding:12px;background:#f8fafc;border-radius:6px;">' + overallAdvice + '<br><br><em>以上结果由心理筛查系统自动统计生成，仅供内部参考。建议结合日常工作表现和面谈综合评估。</em></p></div>';
+  container.innerHTML = html;
+}
+
+function renderResultsTrauma(results) {
+  var container = document.getElementById('resultContent');
+  var now = new Date();
+  var dateStr = now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日';
+  var html = '<div class="info-grid"><div class="info-item"><span class="info-label">测评单位：</span><span class="info-value">应急中心</span></div><div class="info-item"><span class="info-label">测评日期：</span><span class="info-value">' + dateStr + '</span></div><div class="info-item"><span class="info-label">姓名：</span><span class="info-value">' + (window._resultName || getPersonName() || '（未填写）') + '</span></div><div class="info-item"><span class="info-label">岗位：</span><span class="info-value">' + (window._resultJob || getPersonJob() || '（未填写）') + '</span></div></div>';
+
+  var rst = results[0], scl = scales[0];
+  var totalMax = scl.totalMax;
+
+  html += '<div class="result-section"><h3>一、创伤后应激反应评估（满分' + totalMax + '分）</h3>';
+  html += '<table class="result-table"><thead><tr><th>维度</th><th>得分</th><th>满分</th><th>得分柱状图</th><th>说明</th></tr></thead><tbody>';
+  Object.keys(rst.dimScores).forEach(function(dim) {
+    var data = rst.dimScores[dim];
+    var mx = scl.maxPerDim[dim];
+    var pct = Math.round((data.total/mx)*100);
+    html += '<tr><td class="dim-name">' + dim + '</td><td><b>' + data.total + '</b></td><td>' + mx + '</td><td><div class="result-bar-wrap"><div class="result-bar"><div class="result-bar-fill" style="width:' + pct + '%;background:#c62828"></div></div><span style="font-size:11px">' + pct + '%</span></div></td><td style="text-align:left;font-size:12px">' + (scl.dimDescs[dim] || '') + '</td></tr>';
+  });
+  var trauTotal = rst.totalScore;
+  var trauLevel = scl.traumaLevels[0];
+  scl.traumaLevels.forEach(function(lv) { if (trauTotal>=lv.range[0]&&trauTotal<=lv.range[1]) trauLevel=lv; });
+  html += '<tr style="background:#f8fafc;font-weight:700"><td>创伤总分</td><td class="' + trauLevel.cls + '"><b>' + trauTotal + '</b></td><td>' + totalMax + '</td><td><div class="result-bar-wrap"><div class="result-bar"><div class="result-bar-fill" style="width:' + Math.round(trauTotal/totalMax*100) + '%;background:#c62828"></div></div><span style="font-size:11px">' + Math.round(trauTotal/totalMax*100) + '%</span></div></td><td class="' + trauLevel.cls + '" style="text-align:left;font-weight:700">' + trauLevel.level + '：' + trauLevel.desc + '</td></tr>';
+  html += '</tbody></table></div>';
+
+  // PTSD 临床警示筛查
+  html += '<div class="result-section"><h3>二、PTSD 临床警示筛查</h3>';
+  var bFlag=0, cFlag=0, dFlag=0, eFlag=0;
+  scl.items.forEach(function(it) {
+    var score = rst.scores[it.n] || 0;
+    if (score >= 2) {
+      var dims = scl.dims;
+      if (dims['闯入性再体验'].indexOf(it.n)>=0) bFlag++;
+      if (dims['回避与麻木'].indexOf(it.n)>=0) cFlag++;
+      if (dims['认知情绪负性改变'].indexOf(it.n)>=0) dFlag++;
+      if (dims['高警觉反应'].indexOf(it.n)>=0) eFlag++;
+    }
+  });
+  var ptsdCriteriaMet = (bFlag>=1 && cFlag>=1 && dFlag>=2 && eFlag>=2);
+  html += '<table class="result-table"><thead><tr><th>DSM-5 诊断标准维度</th><th>要求（中重度症状项数）</th><th>实际达标项数</th><th>状态</th></tr></thead><tbody>';
+  html += '<tr><td class="dim-name">B.闯入性再体验症状</td><td>≥1项</td><td>' + bFlag + '</td><td class="' + (bFlag>=1?'result-low':'result-high') + '">' + (bFlag>=1?'达标':'未达标') + '</td></tr>';
+  html += '<tr><td class="dim-name">C.持续性回避症状</td><td>≥1项</td><td>' + cFlag + '</td><td class="' + (cFlag>=1?'result-low':'result-high') + '">' + (cFlag>=1?'达标':'未达标') + '</td></tr>';
+  html += '<tr><td class="dim-name">D.认知与情绪的负性改变</td><td>≥2项</td><td>' + dFlag + '</td><td class="' + (dFlag>=2?'result-low':'result-high') + '">' + (dFlag>=2?'达标':'未达标') + '</td></tr>';
+  html += '<tr><td class="dim-name">E.警觉与反应性显著改变</td><td>≥2项</td><td>' + eFlag + '</td><td class="' + (eFlag>=2?'result-low':'result-high') + '">' + (eFlag>=2?'达标':'未达标') + '</td></tr>';
+  html += '</tbody></table>';
+  var funcScore = (rst.scores[19]||0)+(rst.scores[20]||0);
+  html += '<p style="margin-top:10px;font-size:13px">F.社会功能影响评分：<b>' + funcScore + '</b> / 8（≥2表示存在临床意义上的功能损害）</p>';
+  if (ptsdCriteriaMet && funcScore>=2) {
+    html += '<div class="result-badge result-high">临床警示：该人员满足PTSD诊断筛查标准B+C+D+E+F，建议立即转介至专业精神卫生机构进行全面诊断评估。</div>';
+  } else if (ptsdCriteriaMet || funcScore>=2) {
+    html += '<div class="result-badge result-mid">临床提示：该人员存在部分PTSD诊断条目达标，虽不完全满足DSM-5全标准，但仍建议安排专业心理评估并持续观察。</div>';
+  } else {
+    html += '<div class="result-badge result-low">筛查结果：该人员暂不满足PTSD临床诊断筛查标准，心理创伤反应处于可控范围。</div>';
+  }
+  html += '</div>';
+
+  // 岗位适配建议
+  html += '<div class="result-section"><h3>三、岗位适配与干预建议</h3>';
+  var pct = Math.round(trauTotal/totalMax*100);
+  var advice = '';
+  if (pct >= 75) {
+    advice = '创伤反应严重，已达到临床关注水平。(1)建议立即转介专业心理治疗，进行PTSD综合诊断；(2)暂离一线抢险岗位，安排后勤支持或技术保障等低应激岗位；(3)启动单位内部心理危机干预机制；(4)每两周进行一次复查，直至症状缓解；(5)离岗期间继续发放全额薪酬，减轻经济压力。';
+  } else if (pct >= 50) {
+    advice = '创伤反应较为明显，存在发展风险。(1)建议安排专业心理咨询，重点关注核心症状维度；(2)调整工作内容，避免高危、高压力的抢险任务；(3)安排经验丰富的同伴一对一支持；(4)建立每周心理状态自评制度，动态监测变化；(5)一个月后复查评估。';
+  } else if (pct >= 25) {
+    advice = '存在一定程度的创伤后反应，属险情后正常心理调适范围。(1)建议参加小组心理疏导和分享活动；(2)适当减少高强度任务频次，保证充分休息；(3)学习创伤后心理复原自助技巧（正念、放松训练等）；(4)三个月后复查评估。';
+  } else {
+    advice = '创伤后心理恢复良好，未出现明显的应激障碍。(1)继续保持积极的心理调适策略；(2)参与团队心理互助活动，分享经验帮助他人；(3)定期（每半年）进行创伤后心理状态复查；(4)关注自我状态变化，如出现明显症状及时求助。';
+  }
+  html += '<div style="padding:14px;background:#f8fafc;border-radius:6px;line-height:1.8;font-size:13px;">' + advice + '<br><br><em>以上结果由创伤后心理测评系统自动统计生成，仅供内部参考。PTSD的确诊必须由精神卫生专业医师做出，本系统仅提供筛查参考。</em></div>';
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ==================== UTILS ====================
+function showToast(msg) {
+  var toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(function() { toast.classList.remove('show'); }, 2500);
+}
+
+// ==================== PERSON INFO ====================
+function savePersonInfo() {
+  sessionStorage.setItem('person_name', document.getElementById('infoName').value.trim());
+  sessionStorage.setItem('person_job', document.getElementById('infoJob').value.trim());
+}
+function getPersonName() { return sessionStorage.getItem('person_name') || ''; }
+function getPersonJob() { return sessionStorage.getItem('person_job') || ''; }
+function restorePersonInfo() {
+  var n = getPersonName(), j = getPersonJob();
+  if (n) document.getElementById('infoName').value = n;
+  if (j) document.getElementById('infoJob').value = j;
+}
+
+// ==================== SAVE & EXPORT ====================
+function saveResult() {
+  var name = window._resultName || getPersonName();
+  var job = window._resultJob || getPersonJob();
+  if (!name || !job) { showToast('请先在顶部填写姓名和岗位后再保存'); return; }
+  var resultHTML = document.getElementById('resultContent').innerHTML;
+  var now = new Date();
+  var record = {
+    name: name, job: job,
+    date: now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日 ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0'),
+    html: resultHTML, timestamp: now.getTime(), mode: currentMode
+  };
+  var saved = JSON.parse(localStorage.getItem('saved_results') || '[]');
+  saved.unshift(record);
+  if (saved.length > 20) saved.length = 20;
+  localStorage.setItem('saved_results', JSON.stringify(saved));
+  showToast('结果已保存成功');
+  renderSavedResults();
+}
+
+function exportResult() {
+  var name = window._resultName || getPersonName();
+  var job = window._resultJob || getPersonJob();
+  var container = document.getElementById('resultContent');
+  // 修复：正则表达式转义错误 - 将 [\\s\\S] 改为 [\s\S]，<\\/div> 改为 <\/div>，\\s* 改为 \s*
+  var contentHTML = container.innerHTML.replace(/<div class="info-grid">[\s\S]*?<\/div>\s*/, '');
+  var now = new Date();
+  var dateStr = now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日';
+  var timeStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  var subtitle = {new:'新入职人员心理测评结果报告',active:'在岗人员心理筛查结果报告',trauma:'重大险情后创伤心理测评结果报告'}[currentMode];
+  var exportHTML = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml><![endif]--><style>@page{size:A4;margin:2cm}body{font-family:"Microsoft YaHei",SimSun,sans-serif;max-width:900px;margin:0 auto;padding:20px;color:#1a1a2e}h1{text-align:center;color:#0d2137;font-size:18px;margin-bottom:2px}.subtitle{text-align:center;color:#666;font-size:13px;margin-bottom:6px}.info-grid{display:block;background:#f0f4f8;padding:12px 16px;border-radius:6px;margin-bottom:16px;font-size:13px}.info-grid .info-item{display:inline-block;width:48%;margin-bottom:4px}.info-label{color:#666}.info-value{font-weight:600}table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12px}th{background:#1a3a5c;color:white;padding:6px 8px;text-align:center;border:1px solid #999}td{padding:5px 8px;border:1px solid #999;text-align:center}.dim-name{text-align:left;font-weight:600}.result-bar-wrap{display:block;text-align:center}.result-bar{display:inline-block;width:80%;height:8px;background:#e0e0e0;border-radius:4px;overflow:hidden;vertical-align:middle}.result-bar-fill{height:100%;border-radius:4px;display:inline-block;background:#4a90d9}.result-section h3{font-size:14px;color:#1a3a5c;margin:14px 0 6px;padding:6px 10px;background:#e8f0fe;border-radius:4px}.result-low{color:#2e7d32}.result-mid{color:#f57c00}.result-high{color:#c62828}@media print{body{margin:0;padding:10px}}</style></head><body><h1>应急中心</h1><div class="subtitle">' + subtitle + '</div><div class="info-grid"><div class="info-item"><span class="info-label">姓名：</span><span class="info-value">' + (name||'（未填写）') + '</span></div><div class="info-item"><span class="info-label">岗位：</span><span class="info-value">' + (job||'（未填写）') + '</span></div><div class="info-item"><span class="info-label">测评单位：</span><span class="info-value">应急中心</span></div><div class="info-item"><span class="info-label">测评日期：</span><span class="info-value">' + dateStr + ' ' + timeStr + '</span></div></div>' + contentHTML + '<p style="text-align:center;color:#999;font-size:10px;margin-top:16px;">此报告由井控心理测评系统自动生成</p></body></html>';
+  var blob = new Blob(['\ufeff' + exportHTML], { type: 'application/msword;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = '井控心理测评结果_' + (name || '未具名') + '_' + dateStr + '.doc';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('结果已导出为Word文档');
+}
+
+function renderSavedResults() {
+  var container = document.getElementById('savedResults');
+  var saved = JSON.parse(localStorage.getItem('saved_results') || '[]');
+  if (saved.length === 0) { container.innerHTML = ''; return; }
+  var html = '<h3 style="margin-bottom:8px">已保存的测评记录</h3>';
+  html += '<table style="width:100%;font-size:13px;border-collapse:collapse"><thead><tr>';
+  html += '<th style="background:#1a3a5c;color:white;padding:8px;text-align:left">姓名</th>';
+  html += '<th style="background:#1a3a5c;color:white;padding:8px;text-align:left">岗位</th>';
+  html += '<th style="background:#1a3a5c;color:white;padding:8px;text-align:left">类型</th>';
+  html += '<th style="background:#1a3a5c;color:white;padding:8px;text-align:left">完成时间</th>';
+  html += '<th style="background:#1a3a5c;color:white;padding:8px">操作</th>';
+  html += '</tr></thead><tbody>';
+  saved.forEach(function(rec, idx) {
+    var typeLabel = {new:'新入职测评',active:'在岗筛查',trauma:'创伤测评'}[rec.mode] || '测评记录';
+    html += '<tr><td style="padding:6px 8px;border-bottom:1px solid #e0e0e0;font-weight:600">' + rec.name + '</td><td style="padding:6px 8px;border-bottom:1px solid #e0e0e0">' + rec.job + '</td><td style="padding:6px 8px;border-bottom:1px solid #e0e0e0">' + typeLabel + '</td><td style="padding:6px 8px;border-bottom:1px solid #e0e0e0">' + rec.date + '</td><td style="padding:6px 8px;border-bottom:1px solid #e0e0e0;text-align:center"><button onclick="viewSavedResult(' + idx + ')" style="padding:4px 12px;background:#1a3a5c;color:white;border:none;border-radius:4px;cursor:pointer;font-size:12px;margin-right:4px">查看</button><button onclick="exportSavedResult(' + idx + ')" style="padding:4px 12px;background:#4a90d9;color:white;border:none;border-radius:4px;cursor:pointer;font-size:12px;margin-right:4px">导出</button><button onclick="deleteSavedResult(' + idx + ')" style="padding:4px 12px;background:#c62828;color:white;border:none;border-radius:4px;cursor:pointer;font-size:12px">删除</button></td></tr>';
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function viewSavedResult(idx) {
+  var saved = JSON.parse(localStorage.getItem('saved_results') || '[]');
+  if (idx >= saved.length) return;
+  var rec = saved[idx];
+  window._resultName = rec.name; window._resultJob = rec.job;
+  var container = document.getElementById('resultContent');
+  container.innerHTML = rec.html;
+  var infoValues = container.querySelectorAll('.info-value');
+  if (infoValues.length >= 3) infoValues[2].textContent = rec.name;
+  if (infoValues.length >= 4) infoValues[3].textContent = rec.job;
+  switchTab(scales.length);
+}
+
+function exportSavedResult(idx) {
+  var saved = JSON.parse(localStorage.getItem('saved_results') || '[]');
+  if (idx >= saved.length) return;
+  var rec = saved[idx];
+  // 修复：正则表达式转义错误
+  var contentHTML = rec.html.replace(/<div class="info-grid">[\s\S]*?<\/div>\s*/, '');
+  var subtitle = {new:'新入职人员心理测评结果报告',active:'在岗人员心理筛查结果报告',trauma:'重大险情后创伤心理测评结果报告'}[rec.mode] || '心理测评结果报告';
+  var exportHTML = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml><![endif]--><style>@page{size:A4;margin:2cm}body{font-family:"Microsoft YaHei",SimSun,sans-serif;max-width:900px;margin:0 auto;padding:20px;color:#1a1a2e}h1{text-align:center;color:#0d2137;font-size:18px;margin-bottom:2px}.subtitle{text-align:center;color:#666;font-size:13px;margin-bottom:6px}.info-grid{display:block;background:#f0f4f8;padding:12px 16px;border-radius:6px;margin-bottom:16px;font-size:13px}.info-grid .info-item{display:inline-block;width:48%;margin-bottom:4px}.info-label{color:#666}.info-value{font-weight:600}table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12px}th{background:#1a3a5c;color:white;padding:6px 8px;text-align:center;border:1px solid #999}td{padding:5px 8px;border:1px solid #999;text-align:center}.dim-name{text-align:left;font-weight:600}.result-bar-wrap{display:block;text-align:center}.result-bar{display:inline-block;width:80%;height:8px;background:#e0e0e0;border-radius:4px;overflow:hidden;vertical-align:middle}.result-bar-fill{height:100%;border-radius:4px;display:inline-block;background:#4a90d9}.result-section h3{font-size:14px;color:#1a3a5c;margin:14px 0 6px;padding:6px 10px;background:#e8f0fe;border-radius:4px}.result-low{color:#2e7d32}.result-mid{color:#f57c00}.result-high{color:#c62828}@media print{body{margin:0;padding:10px}}</style></head><body><h1>应急中心</h1><div class="subtitle">' + subtitle + '</div><div class="info-grid"><div class="info-item"><span class="info-label">姓名：</span><span class="info-value">' + rec.name + '</span></div><div class="info-item"><span class="info-label">岗位：</span><span class="info-value">' + rec.job + '</span></div><div class="info-item"><span class="info-label">测评单位：</span><span class="info-value">应急中心</span></div><div class="info-item"><span class="info-label">测评日期：</span><span class="info-value">' + rec.date + '</span></div></div>' + contentHTML + '<p style="text-align:center;color:#999;font-size:10px;margin-top:16px;">此报告由井控心理测评系统自动生成</p></body></html>';
+  var blob = new Blob(['\ufeff' + exportHTML], { type: 'application/msword;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = '井控心理测评结果_' + rec.name + '_' + rec.date + '.doc';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('历史记录已导出为Word文档');
+}
+
+function deleteSavedResult(idx) {
+  if (!confirm('确定要删除这条测评记录吗？')) return;
+  var saved = JSON.parse(localStorage.getItem('saved_results') || '[]');
+  saved.splice(idx, 1);
+  localStorage.setItem('saved_results', JSON.stringify(saved));
+  renderSavedResults();
+  showToast('记录已删除');
+}
+
+// ==================== INIT ====================
+function init() {
+  try {
+    restorePersonInfo();
+    switchMode('new');
+    renderSavedResults();
+  } catch(e) {
+    if (window.onerror) window.onerror(e.message, '', 0, 0, e);
+  }
+}
+document.addEventListener('DOMContentLoaded', init);
+window.addEventListener('beforeunload', function() { saveAnswers(currentTab); });
+
+</script>
+
+</body>
+</html>
